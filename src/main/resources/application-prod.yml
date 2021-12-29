@@ -1,0 +1,25 @@
+oauthserver:
+  authProperties:
+    clientId: client
+    clientSecret: 123456
+    # access_token 有效时长
+    tokenExpiresIn: 7200
+    ssoCheckTicket: http://10.1.66.99:4012/casserver/serviceValidate?ticket=TICKET&service=SERVICE
+  jndiProperties:
+    jndiName: WeChatWorkAPPJNDI
+  esbProperties:
+    contractUrl: http://10.1.176.99:25201/ccic/esb/getwxuserinfoservicerest/Restful
+    basicUserName: qywxapp
+    basicPassword: qywxapp@2019
+    consumerId: qywxapp
+    corpId: CCIC_PROD
+    systemId: OAuthServer
+logging:
+  level:
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    guru.springframework.controllers: INFO
+  file: /ccicall/Applog/oauthserver/oauthserver.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger- %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger- %msg%n"

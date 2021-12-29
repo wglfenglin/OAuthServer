@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+    <springProperty scope="context" name="LOG_HOME" source="logback.file"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <pattern>
+                    <pattern>
+                        {"thread":"%thread","date": "%d{yyyy-MM-dd HH:mm:ss.SSS}","level": "%-5level","className":"%logger","msg": "%msg"}%n
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+    <appender name="LOGSTASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${hostName}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/${hostName}-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+            <maxHistory>30</maxHistory>  <!-- 保存30天 -->
+            <totalSizeCap>8GB</totalSizeCap>  <!-- 总日志大小 -->
+            <!-- 除按日志记录之外，还配置了日志文件不能超过100M，若超过100M，日志文件会以索引0开始，
+            命名日志文件，例如${hostName}-error-2013-12-21.0.log.zip -->
+            <!-- 日志级别排序为： TRACE < DEBUG < INFO < WARN < ERROR -->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <append>true</append>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread]  %logger - %msg%n</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+    </appender>
+    <appender name="trace-async-appender" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>512</queueSize>
+        <appender-ref ref="LOGSTASH"/>
+        <appender-ref ref="STDOUT"/>
+    </appender>
+
+    <springProfile name="dev">
+        <root level="INFO" >
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="trace-async-appender"/>
+        </root>
+    </springProfile>
+    <springProfile name="prod">
+        <root level="INFO" >
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="trace-async-appender"/>
+        </root>
+    </springProfile>
+    <springProfile name="test">
+        <root level="DEBUG" >
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="trace-async-appender"/>
+        </root>
+    </springProfile>
+
+</configuration>
